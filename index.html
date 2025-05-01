@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediQR</title>
+</head>
+<body>
+  <section id="scan-section">
+    <h2>Scan Patient QR Code</h2>
+    <input type="file" accept="image/*" id="qr-upload" />
+
+    <div id="record-display" class="hidden"></div>
+    <div id="no-records" class="hidden">No patient records found.</div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <script src="app-logic.js"></script>
+  <script>
+    document.getElementById('qr-upload').addEventListener('change', async function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const qr = jsQR(imageData.data, canvas.width, canvas.height);
+          if (qr && qr.data) {
+            loadPatientRecord(qr.data.trim());
+          } else {
+            document.getElementById("record-display").classList.add("hidden");
+            const noRecords = document.getElementById("no-records");
+            noRecords.classList.remove("hidden");
+            noRecords.innerText = "QR code could not be read.";
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+
+  <style>
+    #record-display {
+      padding: 16px;
+      background-color: #1f1f1f;
+      border-radius: 8px;
+      margin-top: 16px;
+      color: #f2f2f2;
+    }
+    .hidden {
+      display: none;
+    }
+    #no-records {
+      color: #ff4d4f;
+      margin-top: 16px;
+      text-align: center;
+    }
+  </style>
+</body>
+</html>
