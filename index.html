@@ -1,69 +1,294 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MediQR</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediQR - Digital Hospital System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/qrcode.min.js"></script>
+    <script src="./js/jsqr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+        :root {
+            --cream: #f8f5f0;
+            --cream-dark: #e8e5e0;
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --accent: #10b981;
+            --accent-dark: #059669;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cream);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            border: none;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        .input-field {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .tab-active {
+            color: var(--primary);
+            position: relative;
+        }
+
+        .tab-active:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 3px;
+        }
+
+        .toggle-checked {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-light);
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .record-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+
+        .protected-badge {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .open-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-dark);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover:after {
+            transform: scaleX(1);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
 </head>
-<body>
-  <section id="scan-section">
-    <h2>Scan Patient QR Code</h2>
-    <input type="file" accept="image/*" id="qr-upload" />
+<body class="bg-gradient-to-b from-[#f8f5f0] to-[#f0ede8]">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <header class="flex justify-between items-center mb-12">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 002 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-display font-bold bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent">MediQR</h1>
+            </div>
 
-    <div id="record-display" class="hidden"></div>
-    <div id="no-records" class="hidden">No patient records found.</div>
-  </section>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-medium text-gray-600">Patient</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="role-toggle" class="sr-only peer" onclick="toggleRole()">
+                    <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+                <span class="text-sm font-medium text-gray-600">Admin</span>
+            </div>
+        </header>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
-  <script src="app-logic.js"></script>
-  <script>
-    document.getElementById('qr-upload').addEventListener('change', async function (event) {
-      const file = event.target.files[0];
-      if (!file) return;
+        <div id="patient-view" class="animate__animated animate__fadeIn">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="card p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-display font-semibold text-gray-800">Generate Your Medical QR</h2>
+                    </div>
 
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const img = new Image();
-        img.onload = function () {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const qr = jsQR(imageData.data, canvas.width, canvas.height);
-          if (qr && qr.data) {
-            loadPatientRecord(qr.data.trim());
-          } else {
-            document.getElementById("record-display").classList.add("hidden");
-            const noRecords = document.getElementById("no-records");
-            noRecords.classList.remove("hidden");
-            noRecords.innerText = "QR code could not be read.";
-          }
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  </script>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="full-name" class="block text-sm font-medium text-gray-600 mb-1">Full Name</label>
+                            <input type="text" id="full-name" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                        </div>
 
-  <style>
-    #record-display {
-      padding: 16px;
-      background-color: #1f1f1f;
-      border-radius: 8px;
-      margin-top: 16px;
-      color: #f2f2f2;
-    }
-    .hidden {
-      display: none;
-    }
-    #no-records {
-      color: #ff4d4f;
-      margin-top: 16px;
-      text-align: center;
-    }
-  </style>
-</body>
-</html>
+                        <div>
+                            <label for="dob" class="block text-sm font-medium text-gray-600 mb-1">Date of Birth</label>
+                            <input type="date" id="dob" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label for="hospital-number" class="block text-sm font-medium text-gray-600 mb-1">Hospital Number</label>
+                            <input type="text" id="hospital-number" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                        </div>
+
+                        <div class="flex items-center">
+                            <input type="checkbox" id="password-protect" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                            <label for="password-protect" class="ml-2 text-sm font-medium text-gray-600">Password protect my records</label>
+                        </div>
+
+                        <div id="password-fields" class="hidden space-y-4">
+                            <div>
+                                <label for="record-password" class="block text-sm font-medium text-gray-600 mb-1">Set Password</label>
+                                <input type="password" id="record-password" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                            </div>
+                        </div>
+
+                        <button onclick="generateQRCode()" class="btn-primary w-full py-3 px-6 rounded-lg font-medium mt-2">
+                            Generate QR Code
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card p-6 flex flex-col">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-display font-semibold text-gray-800">Your Digital Hospital Card</h2>
+                    </div>
+
+                    <div class="flex-1 flex flex-col items-center justify-center">
+                        <div id="qrcode" class="mb-6 p-4 bg-white rounded-xl border border-gray-100 hidden"></div>
+                        <p id="qr-instructions" class="text-sm text-gray-500 text-center max-w-xs">
+                            Your personalized QR code will appear here after entering your details.
+                            This serves as your digital hospital identification.
+                        </p>
+                        <button id="download-btn" class="btn-accent py-2 px-6 rounded-lg font-medium mt-6 hidden" onclick="downloadQRCode()">
+                            Download QR Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 22V12h6v10" />
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-display font-semibold text-gray-800">Access Medical Records</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Upload QR Code</label>
+                            <div class="upload-area flex items-center justify-center w-full h-40 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-sm">
+                                <div class="text-center p-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <p class="text-sm text-gray
