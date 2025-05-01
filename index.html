@@ -222,7 +222,10 @@
             to { opacity: 1; }
         }
     </style>
-</head>
+
+    <script src="https://unpkg.com/jsqr"></script>
+    </head>
+
 <body class="bg-gradient-to-b from-[#f8f5f0] to-[#f0ede8]">
     <div class="container mx-auto px-4 py-8 max-w-7xl">
         <!-- Header -->
@@ -1122,5 +1125,40 @@
             alert(`${type === 'error' ? 'Error' : 'Success'}: ${message}`);
         }
     </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const uploadInput = document.querySelector('input[type="file"]');
+    if (!uploadInput) return;
+
+    uploadInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, canvas.width, canvas.height);
+                if (code) {
+                    alert("✅ QR Code Detected: " + code.data);
+                    // Future hook: Load patient data based on code.data
+                } else {
+                    alert("❌ Could not detect a valid QR code.");
+                }
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>
 </body>
+
 </html>
