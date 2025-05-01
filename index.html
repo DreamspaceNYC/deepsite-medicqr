@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediQR - Digital Hospital System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --cream: #f8f5f0;
+            --cream-dark: #e8e5e0;
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --accent: #10b981;
+            --accent-dark: #059669;
+            --danger: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cream);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            border: none;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        
+        .btn-accent:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+        }
+        
+        .input-field {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .tab-active {
+            color: var(--primary);
+            position: relative;
+        }
+        
+        .tab-active:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 3px;
+        }
+        
+        .toggle-checked {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+        
+        .upload-area {
+            border: 2px dashed rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary-light);
+            background: rgba(99, 102, 241, 0.02);
+        }
+        
+        .record-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+        
+        .protected-badge {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .open-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-dark);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-link:hover:after {
+            transform: scaleX(1);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-[#f8f5f0] to-[#f0ede8]">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-12">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-display font-bold bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent">MediQR</h1>
+            </div>
+            
+            <!-- Role Toggle -->
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-medium text-gray-600">Patient</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="role-toggle" class="sr-only peer" onclick="toggleRole()">
+                    <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+                <span class="text-sm font-medium text-gray-600">Admin</span>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <div id="patient-view" class="animate__animated animate__fadeIn">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- QR Generation Card -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-display font-semibold text-gray-800">Generate Your Medical QR</h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="full-name" class="block text-sm font-medium text-gray-600 mb-1">Full Name</label>
+                            <input type="text" id="full-name" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                        </div>
+                        
+                        <div>
+                            <label for="dob" class="block text-sm font-medium text-gray-600 mb-1">Date of Birth</label>
+                            <input type="date" id="dob" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                        </div>
+                        
+                        <div>
+                            <label for="hospital-number" class="block text-sm font-medium text-gray-600 mb-1">Hospital Number</label>
+                            <input type="text" id="hospital-number" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="password-protect" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                            <label for="password-protect" class="ml-2 text-sm font-medium text-gray-600">Password protect my records</label>
+                        </div>
+                        
+                        <div id="password-fields" class="hidden space-y-4">
+                            <div>
+                                <label for="record-password" class="block text-sm font-medium text-gray-600 mb-1">Set Password</label>
+                                <input type="password" id="record-password" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                            </div>
+                        </div>
+                        
+                        <button onclick="generateQRCode()" class="btn-primary w-full py-3 px-6 rounded-lg font-medium mt-2">
+                            Generate QR Code
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- QR Display Card -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-display font-semibold text-gray-800">Your Digital Hospital Card</h2>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col items-center justify-center">
+                        <div id="qrcode" class="mb-6 p-4 bg-white rounded-xl border border-gray-100 hidden"></div>
+                        <p id="qr-instructions" class="text-sm text-gray-500 text-center max-w-xs">
+                            Your personalized QR code will appear here after entering your details. 
+                            This serves as your digital hospital identification.
+                        </p>
+                        <button id="download-btn" class="btn-accent py-2 px-6 rounded-lg font-medium mt-6 hidden" onclick="downloadQRCode()">
+                            Download QR Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- QR Scanner Card -->
+            <div class="card p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 22V12h6v10" />
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-display font-semibold text-gray-800">Access Medical Records</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Upload QR Code</label>
+                            <div class="upload-area flex items-center justify-center w-full h-40 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-sm">
+                                <div class="text-center p-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <p class="text-sm text-gray-500">Drag & drop your QR code image or click to browse</p>
+                                    <p class="text-xs text-gray-400 mt-1">Supports PNG, JPG up to 5MB</p>
+                                </div>
+                                <input id="qr-upload" type="file" class="hidden" accept="image/*" onchange="handleQRUpload(event)"/>
+                            </div>
+                        </div>
+                        
+                        <div id="password-input-container" class="hidden space-y-4">
+                            <div>
+                                <label for="access-password" class="block text-sm font-medium text-gray-600 mb-1">Enter Password</label>
+                                <input type="password" id="access-password" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                            </div>
+                            <button onclick="accessRecords()" class="btn-primary w-full py-3 px-6 rounded-lg font-medium">
+                                Access Records
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <div id="record-display" class="hidden flex-1">
+                            <h3 class="font-medium mb-3 text-indigo-600">Patient Medical Summary</h3>
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</p>
+                                        <p id="record-name" class="font-medium text-gray-800"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Hospital No.</p>
+                                        <p id="record-number" class="font-medium text-gray-800"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date of Birth</p>
+                                        <p id="record-dob" class="font-medium text-gray-800"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Type</p>
+                                        <p id="record-blood" class="font-medium text-gray-800"></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Allergies</p>
+                                        <p id="record-allergies" class="font-medium text-gray-800"></p>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Current Medications</p>
+                                        <p id="record-meds" class="font-medium text-gray-800"></p>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</p>
+                                        <p id="record-last-visit" class="font-medium text-gray-800"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="no-records" class="flex-1 flex flex-col items-center justify-center h-full py-8">
+                            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p class="text-gray-500 text-center max-w-xs">No records available. Upload a valid QR code to view patient information.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Admin View -->
+        <div id="admin-view" class="hidden animate__animated animate__fadeIn">
+            <!-- Admin Tabs -->
+            <div class="flex mb-6 border-b border-gray-200">
+                <button id="records-tab" class="tab-active pb-3 px-4 mr-6 text-sm font-medium" onclick="switchTab('records')">
+                    Patient Records
+                </button>
+                <button id="scan-tab" class="pb-3 px-4 text-gray-500 hover:text-indigo-600 text-sm font-medium" onclick="switchTab('scan')">
+                    Scan QR Code
+                </button>
+            </div>
+            
+            <!-- Records Tab Content -->
+            <div id="records-content">
+                <div class="card p-6 mb-6">
+                    <div class="relative max-w-md">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="search-records" class="input-field pl-10 pr-4 py-3 w-full rounded-lg focus:outline-none" placeholder="Search patients..." oninput="searchRecords()">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="records-list">
+                    <!-- Records will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Scan Tab Content -->
+            <div id="scan-content" class="hidden">
+                <div class="card p-6 mb-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 22V12h6v10" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-display font-semibold text-gray-800">Patient Record Access</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-600 mb-2">Upload Patient QR Code</label>
+                                <div class="upload-area flex items-center justify-center w-full h-40 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-sm">
+                                    <div class="text-center p-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        <p class="text-sm text-gray-500">Scan a patient's QR code to access their records</p>
+                                        <p class="text-xs text-gray-400 mt-1">Supports PNG, JPG up to 5MB</p>
+                                    </div>
+                                    <input id="admin-qr-upload" type="file" class="hidden" accept="image/*" onchange="handleAdminQRUpload(event)"/>
+                                </div>
+                            </div>
+                            
+                            <div id="admin-password-input-container" class="hidden space-y-4">
+                                <div>
+                                    <label for="admin-access-password" class="block text-sm font-medium text-gray-600 mb-1">Enter Record Password</label>
+                                    <input type="password" id="admin-access-password" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                                </div>
+                                <button onclick="adminAccessRecords()" class="btn-primary w-full py-3 px-6 rounded-lg font-medium">
+                                    Access Records
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col">
+                            <div id="admin-record-display" class="hidden flex-1">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="font-medium text-indigo-600">Patient Medical Records</h3>
+                                    <button onclick="addNewVisit()" class="btn-accent py-2 px-4 rounded-lg text-sm font-medium">
+                                        + New Visit
+                                    </button>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</p>
+                                            <p id="admin-record-name" class="font-medium text-gray-800"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Hospital No.</p>
+                                            <p id="admin-record-number" class="font-medium text-gray-800"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date of Birth</p>
+                                            <p id="admin-record-dob" class="font-medium text-gray-800"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Type</p>
+                                            <p id="admin-record-blood" class="font-medium text-gray-800"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Allergies</p>
+                                            <p id="admin-record-allergies" class="font-medium text-gray-800"></p>
+                                        </div>
+                                        
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Current Medications</p>
+                                            <p id="admin-record-meds" class="font-medium text-gray-800"></p>
+                                        </div>
+                                        
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</p>
+                                            <p id="admin-record-last-visit" class="font-medium text-gray-800"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="admin-no-records" class="flex-1 flex flex-col items-center justify-center h-full py-8">
+                                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <p class="text-gray-500 text-center max-w-xs">No patient records found. Scan a QR code to begin.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-display font-semibold text-gray-800">Create New Patient Record</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="new-patient-name" class="block text-sm font-medium text-gray-600 mb-1">Full Name</label>
+                                <input type="text" id="new-patient-name" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                            </div>
+                            
+                            <div>
+                                <label for="new-patient-dob" class="block text-sm font-medium text-gray-600 mb-1">Date of Birth</label>
+                                <input type="date" id="new-patient-dob" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                            </div>
+                            
+                            <div>
+                                <label for="new-patient-number" class="block text-sm font-medium text-gray-600 mb-1">Hospital Number</label>
+                                <input type="text" id="new-patient-number" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                            </div>
+                            
+                            <div>
+                                <label for="new-patient-blood" class="block text-sm font-medium text-gray-600 mb-1">Blood Type</label>
+                                <select id="new-patient-blood" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="new-patient-allergies" class="block text-sm font-medium text-gray-600 mb-1">Allergies</label>
+                                <textarea id="new-patient-allergies" rows="2" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none" placeholder="List any known allergies"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label for="new-patient-meds" class="block text-sm font-medium text-gray-600 mb-1">Current Medications</label>
+                                <textarea id="new-patient-meds" rows="2" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none" placeholder="List current medications"></textarea>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="new-patient-password" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                                <label for="new-patient-password" class="ml-2 text-sm font-medium text-gray-600">Password protect this record</label>
+                            </div>
+                            
+                            <div id="new-patient-password-fields" class="hidden">
+                                <label for="new-record-password" class="block text-sm font-medium text-gray-600 mb-1">Set Password</label>
+                                <input type="password" id="new-record-password" class="input-field w-full px-4 py-3 rounded-lg focus:outline-none">
+                            </div>
+                            
+                            <button onclick="addNewPatient()" class="btn-primary w-full py-3 px-6 rounded-lg font-medium mt-4">
+                                Create Patient Record
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated database
+        let patientsDatabase = {
+            "HOSP12345": {
+                name: "John Doe",
+                dob: "1985-05-15",
+                hospitalNumber: "HOSP12345",
+                bloodType: "A+",
+                allergies: "Penicillin, Peanuts",
+                medications: "Lisinopril 10mg daily, Metformin 500mg twice daily",
+                lastVisit: "2023-06-10",
+                password: null
+            },
+            "HOSP67890": {
+                name: "Jane Smith",
+                dob: "1990-11-22",
+                hospitalNumber: "HOSP67890",
+                bloodType: "O-",
+                allergies: "None",
+                medications: "Vitamin D 1000IU daily",
+                lastVisit: "2023-05-28",
+                password: "secure123"
+            },
+            "HOSP24680": {
+                name: "Robert Johnson",
+                dob: "1978-03-08",
+                hospitalNumber: "HOSP24680",
+                bloodType: "B+",
+                allergies: "Shellfish",
+                medications: "Atorvastatin 20mg daily",
+                lastVisit: "2023-06-15",
+                password: null
+            },
+            "HOSP13579": {
+                name: "Emily Davis",
+                dob: "1995-07-30",
+                hospitalNumber: "HOSP13579",
+                bloodType: "AB+",
+                allergies: "Latex, Iodine",
+                medications: "Levothyroxine 50mcg daily",
+                lastVisit: "2023-06-05",
+                password: "health2023"
+            }
+        };
+
+        // Current patient data for QR code
+        let currentPatientData = null;
+        let currentPassword = null;
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if password protect checkbox is checked
+            document.getElementById('password-protect').addEventListener('change', function() {
+                const passwordFields = document.getElementById('password-fields');
+                if (this.checked) {
+                    passwordFields.classList.remove('hidden');
+                } else {
+                    passwordFields.classList.add('hidden');
+                }
+            });
+            
+            // Check if new patient password protect checkbox is checked
+            document.getElementById('new-patient-password').addEventListener('change', function() {
+                const passwordFields = document.getElementById('new-patient-password-fields');
+                if (this.checked) {
+                    passwordFields.classList.remove('hidden');
+                } else {
+                    passwordFields.classList.add('hidden');
+                }
+            });
+            
+            // Populate admin records list
+            populateRecordsList();
+            
+            // Add animation to upload areas
+            const uploadAreas = document.querySelectorAll('.upload-area');
+            uploadAreas.forEach(area => {
+                area.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('border-indigo-300', 'bg-indigo-50');
+                });
+                
+                area.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('border-indigo-300', 'bg-indigo-50');
+                });
+            });
+        });
+
+        // Toggle between patient and admin views
+        function toggleRole() {
+            const patientView = document.getElementById('patient-view');
+            const adminView = document.getElementById('admin-view');
+            const roleToggle = document.getElementById('role-toggle');
+            
+            if (roleToggle.checked) {
+                patientView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                adminView.classList.add('animate__fadeIn');
+            } else {
+                adminView.classList.add('hidden');
+                patientView.classList.remove('hidden');
+                patientView.classList.add('animate__fadeIn');
+            }
+        }
+
+        // Switch tabs in admin view
+        function switchTab(tab) {
+            const recordsTab = document.getElementById('records-tab');
+            const scanTab = document.getElementById('scan-tab');
+            const recordsContent = document.getElementById('records-content');
+            const scanContent = document.getElementById('scan-content');
+            
+            if (tab === 'records') {
+                recordsTab.classList.add('tab-active');
+                recordsTab.classList.remove('text-gray-500');
+                scanTab.classList.remove('tab-active');
+                scanTab.classList.add('text-gray-500');
+                
+                recordsContent.classList.remove('hidden');
+                scanContent.classList.add('hidden');
+            } else {
+                recordsTab.classList.remove('tab-active');
+                recordsTab.classList.add('text-gray-500');
+                scanTab.classList.add('tab-active');
+                scanTab.classList.remove('text-gray-500');
+                
+                recordsContent.classList.add('hidden');
+                scanContent.classList.remove('hidden');
+            }
+        }
+
+        // Generate QR code for patient
+        function generateQRCode() {
+            const fullName = document.getElementById('full-name').value.trim();
+            const dob = document.getElementById('dob').value;
+            const hospitalNumber = document.getElementById('hospital-number').value.trim();
+            const passwordProtect = document.getElementById('password-protect').checked;
+            const password = passwordProtect ? document.getElementById('record-password').value.trim() : null;
+            
+            if (!fullName || !dob || !hospitalNumber) {
+                showAlert('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (passwordProtect && !password) {
+                showAlert('Please set a password for your records', 'error');
+                return;
+            }
+            
+            // Create patient data object
+            currentPatientData = {
+                name: fullName,
+                dob: dob,
+                hospitalNumber: hospitalNumber,
+                password: password
+            };
+            
+            // Generate QR code
+            const qrCodeElement = document.getElementById('qrcode');
+            qrCodeElement.innerHTML = '';
+            qrCodeElement.classList.remove('hidden');
+            
+            // Stringify data with password flag
+            const qrData = JSON.stringify({
+                hospitalNumber: hospitalNumber,
+                hasPassword: passwordProtect
+            });
+            
+            QRCode.toCanvas(qrData, { 
+                width: 200,
+                color: {
+                    dark: '#4f46e5',
+                    light: '#ffffff'
+                }
+            }, function(error, canvas) {
+                if (error) {
+                    console.error(error);
+                    showAlert('Error generating QR code', 'error');
+                    return;
+                }
+                
+                qrCodeElement.appendChild(canvas);
+                document.getElementById('download-btn').classList.remove('hidden');
+                document.getElementById('qr-instructions').textContent = 'This is your digital hospital card. Show this QR code to hospital staff to access your records.';
+                
+                // Add pulse animation to download button
+                document.getElementById('download-btn').classList.add('animate__animated', 'animate__pulse');
+                
+                showAlert('QR code generated successfully!', 'success');
+            });
+        }
+
+        // Download QR code as image
+        function downloadQRCode() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                showAlert('No QR code to download', 'error');
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.download = `medical-qr-${currentPatientData.hospitalNumber}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            showAlert('QR code downloaded successfully!', 'success');
+        }
+
+        // Handle QR code upload
+        function handleQRUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // In a real app, we would use a QR code reader library here
+                    // For simulation, we'll just look up a patient from our database
+                    
+                    // For demo purposes, we'll use a prompt to simulate QR code reading
+                    const hospitalNumber = prompt("Simulating QR code scan. Enter a hospital number (HOSP12345, HOSP67890, HOSP24680, HOSP13579):");
+                    
+                    if (hospitalNumber && patientsDatabase[hospitalNumber]) {
+                        currentPatientData = patientsDatabase[hospitalNumber];
+                        
+                        // Check if record is password protected
+                        if (currentPatientData.password) {
+                            document.getElementById('password-input-container').classList.remove('hidden');
+                            document.getElementById('no-records').classList.add('hidden');
+                            document.getElementById('record-display').classList.add('hidden');
+                        } else {
+                            displayPatientRecords(currentPatientData);
+                        }
+                    } else {
+                        showAlert('Patient not found in database', 'error');
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Handle admin QR code upload
+        function handleAdminQRUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // In a real app, we would use a QR code reader library here
+                    // For simulation, we'll just look up a patient from our database
+                    
+                    // For demo purposes, we'll use a prompt to simulate QR code reading
+                    const hospitalNumber = prompt("Simulating QR code scan. Enter a hospital number (HOSP12345, HOSP67890, HOSP24680, HOSP13579):");
+                    
+                    if (hospitalNumber && patientsDatabase[hospitalNumber]) {
+                        currentPatientData = patientsDatabase[hospitalNumber];
+                        
+                        // Check if record is password protected
+                        if (currentPatientData.password) {
+                            document.getElementById('admin-password-input-container').classList.remove('hidden');
+                            document.getElementById('admin-no-records').classList.add('hidden');
+                            document.getElementById('admin-record-display').classList.add('hidden');
+                        } else {
+                            displayAdminPatientRecords(currentPatientData);
+                        }
+                    } else {
+                        showAlert('Patient not found in database', 'error');
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Access password-protected records
+        function accessRecords() {
+            const password = document.getElementById('access-password').value.trim();
+            
+            if (!password) {
+                showAlert('Please enter the password', 'error');
+                return;
+            }
+            
+            if (currentPatientData && password === currentPatientData.password) {
+                displayPatientRecords(currentPatientData);
+                document.getElementById('password-input-container').classList.add('hidden');
+            } else {
+                showAlert('Incorrect password', 'error');
+            }
+        }
+
+        // Admin access password-protected records
+        function adminAccessRecords() {
+            const password = document.getElementById('admin-access-password').value.trim();
+            
+            if (!password) {
+                showAlert('Please enter the password', 'error');
+                return;
+            }
+            
+            if (currentPatientData && password === currentPatientData.password) {
+                displayAdminPatientRecords(currentPatientData);
+                document.getElementById('admin-password-input-container').classList.add('hidden');
+            } else {
+                showAlert('Incorrect password', 'error');
+            }
+        }
+
+        // Display patient records
+        function displayPatientRecords(patient) {
+            document.getElementById('record-name').textContent = patient.name;
+            document.getElementById('record-number').textContent = patient.hospitalNumber;
+            document.getElementById('record-dob').textContent = formatDate(patient.dob);
+            document.getElementById('record-blood').textContent = patient.bloodType;
+            document.getElementById('record-allergies').textContent = patient.allergies || 'None';
+            document.getElementById('record-meds').textContent = patient.medications || 'None';
+            document.getElementById('record-last-visit').textContent = formatDate(patient.lastVisit);
+            
+            document.getElementById('record-display').classList.remove('hidden');
+            document.getElementById('no-records').classList.add('hidden');
+            
+            // Add fade-in animation
+            document.getElementById('record-display').classList.add('animate__animated', 'animate__fadeIn');
+        }
+
+        // Display patient records in admin view
+        function displayAdminPatientRecords(patient) {
+            document.getElementById('admin-record-name').textContent = patient.name;
+            document.getElementById('admin-record-number').textContent = patient.hospitalNumber;
+            document.getElementById('admin-record-dob').textContent = formatDate(patient.dob);
+            document.getElementById('admin-record-blood').textContent = patient.bloodType;
+            document.getElementById('admin-record-allergies').textContent = patient.allergies || 'None';
+            document.getElementById('admin-record-meds').textContent = patient.medications || 'None';
+            document.getElementById('admin-record-last-visit').textContent = formatDate(patient.lastVisit);
+            
+            document.getElementById('admin-record-display').classList.remove('hidden');
+            document.getElementById('admin-no-records').classList.add('hidden');
+            
+            // Add fade-in animation
+            document.getElementById('admin-record-display').classList.add('animate__animated', 'animate__fadeIn');
+        }
+
+        // Add new patient (admin function)
+        function addNewPatient() {
+            const name = document.getElementById('new-patient-name').value.trim();
+            const dob = document.getElementById('new-patient-dob').value;
+            const hospitalNumber = document.getElementById('new-patient-number').value.trim();
+            const bloodType = document.getElementById('new-patient-blood').value;
+            const allergies = document.getElementById('new-patient-allergies').value.trim();
+            const medications = document.getElementById('new-patient-meds').value.trim();
+            const passwordProtect = document.getElementById('new-patient-password').checked;
+            const password = passwordProtect ? document.getElementById('new-record-password').value.trim() : null;
+            
+            if (!name || !dob || !hospitalNumber) {
+                showAlert('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (passwordProtect && !password) {
+                showAlert('Please set a password for this record', 'error');
+                return;
+            }
+            
+            // Add to simulated database
+            patientsDatabase[hospitalNumber] = {
+                name: name,
+                dob: dob,
+                hospitalNumber: hospitalNumber,
+                bloodType: bloodType,
+                allergies: allergies || 'None',
+                medications: medications || 'None',
+                lastVisit: new Date().toISOString().split('T')[0],
+                password: password
+            };
+            
+            // Reset form
+            document.getElementById('new-patient-name').value = '';
+            document.getElementById('new-patient-dob').value = '';
+            document.getElementById('new-patient-number').value = '';
+            document.getElementById('new-patient-blood').value = 'A+';
+            document.getElementById('new-patient-allergies').value = '';
+            document.getElementById('new-patient-meds').value = '';
+            document.getElementById('new-patient-password').checked = false;
+            document.getElementById('new-patient-password-fields').classList.add('hidden');
+            document.getElementById('new-record-password').value = '';
+            
+            // Update records list
+            populateRecordsList();
+            
+            showAlert('Patient record created successfully!', 'success');
+        }
+
+        // Add new visit record (admin function)
+        function addNewVisit() {
+            if (!currentPatientData) return;
+            
+            // In a real app, we would have a form to add visit details
+            // For simulation, we'll just update the last visit date
+            const today = new Date().toISOString().split('T')[0];
+            patientsDatabase[currentPatientData.hospitalNumber].lastVisit = today;
+            
+            // Update the display
+            displayAdminPatientRecords(patientsDatabase[currentPatientData.hospitalNumber]);
+            
+            // Update records list
+            populateRecordsList();
+            
+            showAlert('New visit record added successfully!', 'success');
+        }
+
+        // Populate admin records list
+        function populateRecordsList() {
+            const recordsList = document.getElementById('records-list');
+            recordsList.innerHTML = '';
+            
+            for (const hospitalNumber in patientsDatabase) {
+                const patient = patientsDatabase[hospitalNumber];
+                
+                const recordCard = document.createElement('div');
+                recordCard.className = 'card p-5 hover:shadow-md transition-all duration-300 cursor-pointer';
+                recordCard.onclick = function() {
+                    viewPatientRecord(patient.hospitalNumber);
+                };
+                
+                recordCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-medium text-gray-800">${patient.name}</h3>
+                            <p class="text-sm text-gray-500">${patient.hospitalNumber}</p>
+                        </div>
+                        <span class="record-badge ${patient.password ? 'protected-badge' : 'open-badge'}">
+                            ${patient.password ? 'Protected' : 'Open'}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500">Last Visit</p>
+                            <p class="text-sm font-medium text-gray-700">${formatDate(patient.lastVisit)}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500">Blood Type</p>
+                            <p class="text-sm font-medium text-gray-700">${patient.bloodType}</p>
+                        </div>
+                    </div>
+                `;
+                
+                recordsList.appendChild(recordCard);
+            }
+        }
+
+        // View patient record in admin view
+        function viewPatientRecord(hospitalNumber) {
+            const patient = patientsDatabase[hospitalNumber];
+            if (!patient) return;
+            
+            // Switch to scan tab and display the record
+            switchTab('scan');
+            
+            // Simulate QR code scan by setting the current patient
+            currentPatientData = patient;
+            
+            // Display the records
+            if (patient.password) {
+                document.getElementById('admin-password-input-container').classList.remove('hidden');
+                document.getElementById('admin-no-records').classList.add('hidden');
+                document.getElementById('admin-record-display').classList.add('hidden');
+            } else {
+                displayAdminPatientRecords(patient);
+            }
+        }
+
+        // Search records
+        function searchRecords() {
+            const searchTerm = document.getElementById('search-records').value.toLowerCase();
+            const records = document.querySelectorAll('#records-list .card');
+            
+            records.forEach(record => {
+                const name = record.querySelector('h3').textContent.toLowerCase();
+                const number = record.querySelector('p.text-sm').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || number.includes(searchTerm)) {
+                    record.classList.remove('hidden');
+                } else {
+                    record.classList.add('hidden');
+                }
+            });
+        }
+
+        // Helper function to format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        // Show alert notification
+        function showAlert(message, type) {
+            // In a real app, you'd use a proper notification system
+            alert(`${type === 'error' ? 'Error' : 'Success'}: ${message}`);
+        }
+    </script>
+</body>
+</html>
