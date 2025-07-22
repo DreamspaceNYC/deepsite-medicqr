@@ -1,0 +1,10 @@
+# Ignore common large or unnecessary files
+node_modules/
+*.mp4
+*.mov
+*.avi
+*.jpg
+*.jpeg
+*.png
+*.gif
+.DS_Store
